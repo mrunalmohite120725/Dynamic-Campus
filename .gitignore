@@ -1,0 +1,39 @@
+# ============================================================
+# Dynamic Campus — .gitignore
+# ============================================================
+
+# Secrets — NEVER commit
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# User Uploads (may contain sensitive PDFs)
+uploads/
+
+# Temporary development files
+scratch/
+
+# Frontend dependencies and build output
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

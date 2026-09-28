@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teacher Dashboard — Dynamic Campus</title>
+  <meta name="description" content="Teacher login portal for Dynamic Campus timetable management system."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/dashboard.css"/>
+  <link rel="stylesheet" href="../css/home.css"/>
+  <style>
+    /* Register / Login tab toggle */
+    .auth-tabs { display:flex; gap:0; margin-bottom:24px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+    .auth-tab-btn {
+      flex:1; padding:10px 0; font-size:14px; font-weight:600;
+      background:transparent; border:none; color:var(--text-secondary);
+      cursor:pointer; transition:all .2s;
+    }
+    .auth-tab-btn.active { background:var(--accent); color:#fff; }
+    .auth-tab-btn:hover:not(.active) { background:var(--surface-2); color:var(--text-primary); }
+    /* Notification list items */
+    .notif-item { border-bottom:1px solid var(--border); }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-item-inner { display:flex; gap:12px; align-items:flex-start; padding:16px 20px; }
+    .notif-badge-type {
+      padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600;
+      flex-shrink:0; margin-top:2px; white-space:nowrap;
+    }
+    .notif-msg { font-size:14px; font-weight:500; color:var(--text-primary); line-height:1.5; }
+    .notif-meta { font-size:11px; color:var(--text-muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN / REGISTER OVERLAY ─────────────────────────────────────────── -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card glass-card">
+    <div class="login-brand">
+      <div class="brand-icon-lg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h1 class="login-title">Teacher Portal</h1>
+      <p class="login-subtitle">Sign in or create your account</p>
+    </div>
+
+    <!-- Tab buttons -->
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" type="text" id="username" placeholder="Enter your username" required autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" id="password" placeholder="Enter your password" required autocomplete="current-password"/>
+      </div>
+      <div class="login-error" id="login-error" style="display:none"></div>
+      <button class="btn btn-primary btn-md" type="submit" id="login-btn" style="width:100%">
+        Sign In →
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form class="login-form" id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label" for="reg-username">Choose Username</label>
+        <input class="form-input" type="text" id="reg-username" placeholder="e.g. prof.sharma" required autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reg-password">Password (min 6 chars)</label>
+        <input class="form-input" type="password" id="reg-password" placeholder="Create a secure password" required autocomplete="new-password"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="reg-tid">Link to Your Teacher Record</label>
+        <select class="form-input" id="reg-tid">
+          <option value="">— Select your name —</option>
+        </select>
+      </div>
+      <div class="login-error" id="register-error" style="display:none"></div>
+      <button class="btn btn-primary btn-md" type="submit" id="reg-btn" style="width:100%">
+        Create Account →
+      </button>
+    </form>
+
+    <a href="../index.html" class="back-link">← Back to homepage</a>
+  </div>
+</div>
+
+<!-- ── DASHBOARD (shown after login) ─────────────────────────────────────── -->
+<div class="dashboard" id="dashboard" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="brand-name">Dynamic<span class="brand-accent">Campus</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" onclick="showSection('overview',this); return false;">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        Overview
+      </a>
+      <a href="#" class="nav-item" onclick="showSection('schedule',this); return false;">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+        My Schedule
+      </a>
+      <a href="#" class="nav-item" onclick="showSection('extra',this); return false;">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg>
+        Extra Lecture
+      </a>
+      <a href="#" class="nav-item" onclick="showSection('notify',this); return false;">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+        Notifications
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebar-avatar">T</div>
+        <div>
+          <div class="user-name" id="sidebar-name">Teacher</div>
+          <div class="user-role">Teacher</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;margin-top:12px">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <header class="dash-header">
+      <div>
+        <h2 class="dash-title" id="dash-section-title">Overview</h2>
+        <p class="dash-subtitle" id="dash-day-date">Loading…</p>
+      </div>
+      <div class="header-right">
+        <div class="status-badge" id="teacher-status-badge">
+          <span class="status-dot"></span>
+          <span id="teacher-status-text">Checking…</span>
+        </div>
+        <div class="live-clock" id="dash-clock">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- ── OVERVIEW SECTION ─────────────────────────────────────────────── -->
+    <section id="section-overview">
+
+      <!-- Now / Next cards -->
+      <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:32px">
+
+        <div class="stat-card glass-card">
+          <div class="stat-card-header">
+            <span class="card-tag tag-live"><span class="live-dot"></span> Now</span>
+            <span class="stat-time" id="now-time">—</span>
+          </div>
+          <div class="stat-value" id="now-subject">No lecture</div>
+          <div class="stat-meta-row">
+            <span class="meta-chip" id="now-class">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg> —
+            </span>
+            <span class="meta-chip" id="now-room">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg> —
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card glass-card">
+          <div class="stat-card-header">
+            <span class="card-tag tag-next">Next Up</span>
+            <span class="stat-time" id="next-time">—</span>
+          </div>
+          <div class="stat-value" id="next-subject">—</div>
+          <div class="stat-meta-row">
+            <span class="meta-chip" id="next-class">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg> —
+            </span>
+            <span class="meta-chip" id="next-room">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg> —
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Timeline -->
+      <div class="section-header">
+        <h3 class="section-title" style="font-size:20px">Today's Schedule</h3>
+      </div>
+      <div class="glass-card" style="padding:0;overflow:hidden;margin-bottom:32px">
+        <div id="today-timeline" class="timeline-list">
+          <div class="loading-cell">Loading today's schedule…</div>
+        </div>
+      </div>
+
+      <!-- Live Classrooms -->
+      <div class="section-header">
+        <h3 class="section-title" style="font-size:20px">Live Classroom Status</h3>
+        <div class="section-meta">
+          <span class="live-badge"><span class="live-dot"></span> Auto-updates</span>
+          <span class="legend">
+            <span class="legend-dot free"></span> Free
+            <span class="legend-dot occupied"></span> Occupied
+          </span>
+        </div>
+      </div>
+      <div class="classroom-grid" id="classroom-grid">
+        <div class="loading-placeholder">Loading classrooms…</div>
+      </div>
+    </section>
+
+    <!-- ── WEEKLY SCHEDULE SECTION ──────────────────────────────────────── -->
+    <section id="section-schedule" style="display:none">
+      <div class="section-header">
+        <h3 class="section-title" style="font-size:20px">Weekly Schedule</h3>
+      </div>
+      <div class="table-wrapper glass-card">
+        <table class="timetable-table" id="teacher-week-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Monday</th><th>Tuesday</th><th>Wednesday</th>
+              <th>Thursday</th><th>Friday</th>
+            </tr>
+          </thead>
+          <tbody id="teacher-week-body">
+            <tr><td colspan="6" class="loading-cell">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── EXTRA LECTURE REQUEST SECTION ───────────────────────────────── -->
+    <section id="section-extra" style="display:none">
+      <div class="section-header">
+        <h3 class="section-title" style="font-size:20px">Request Extra Lecture</h3>
+      </div>
+      <div class="glass-card" style="padding:32px;max-width:620px">
+        <form id="extra-form" onsubmit="submitExtraLecture(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Subject</label>
+              <select class="form-input" id="extra-subject" required>
+                <option value="">— Select Subject —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Class</label>
+              <select class="form-input" id="extra-class" required>
+                <option value="">— Select Class —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target</label>
+              <select class="form-input" id="extra-batch" disabled>
+                <option value="">Entire Class</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Day</label>
+              <select class="form-input" id="extra-day" required>
+                <option value="">— Select Day —</option>
+                <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                <option>Thursday</option><option>Friday</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Start Time</label>
+              <input class="form-input" type="time" id="extra-start" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Time</label>
+              <input class="form-input" type="time" id="extra-end" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Room (optional)</label>
+              <input class="form-input" type="text" id="extra-room" placeholder="e.g. A1-301"/>
+            </div>
+          </div>
+          
+          <!-- Conflict Warning -->
+          <div id="conflict-warning" style="display:none;margin-top:16px;padding:12px;border-radius:6px;font-size:14px;font-weight:600;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3)">
+            ✗ Class has lecture scheduled
+          </div>
+          <div id="free-rooms-container" style="margin-top:16px;display:none;">
+            <label class="form-label">Suggested Free Rooms <span class="live-dot" style="display:inline-block;margin-left:4px"></span></label>
+            <div id="free-rooms-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="form-label">Reason</label>
+            <textarea class="form-input" id="extra-reason" rows="3"
+              placeholder="Briefly explain why this extra lecture is needed…" style="resize:vertical"></textarea>
+          </div>
+          <div id="extra-result" class="upload-result-box" style="display:none;margin-top:16px"></div>
+          <div style="margin-top:20px;display:flex;gap:12px">
+            <button class="btn btn-primary btn-md" type="submit">Submit Request</button>
+            <button class="btn btn-ghost btn-md" type="reset" onclick="document.getElementById('extra-result').style.display='none'">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── NOTIFICATIONS SECTION ───────────────────────────────────────── -->
+    <section id="section-notify" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1200px">
+        
+        <!-- Send Notification -->
+        <div>
+          <div class="section-header">
+            <h3 class="section-title" style="font-size:20px">Broadcast Notification</h3>
+          </div>
+          <div class="glass-card" style="padding:32px">
+            <div class="form-row" style="display:flex;gap:16px;margin-bottom:16px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Target Class</label>
+                <select class="form-input" id="notif-class" style="width:100%">
+                  <option value="">— Entire College —</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">Target Batch</label>
+                <select class="form-input" id="notif-batch" style="width:100%" disabled>
+                  <option value="">— Entire Class —</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Type</label>
+              <select class="form-input" id="notif-type">
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="change">Classroom Change</option>
+                <option value="cancel">Cancellation</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:20px">
+              <label class="form-label">Message</label>
+              <textarea class="form-input" id="notif-message" rows="4"
+                placeholder="e.g. LP II lecture shifted to A1-302 today at 11:00 AM" style="resize:vertical"></textarea>
+            </div>
+            <button class="btn btn-primary btn-md" onclick="sendNotification()" style="width:100%">
+              Send to Students →
+            </button>
+            <div id="notif-result" style="display:none;margin-top:16px;padding:12px;border-radius:6px;font-size:14px;font-weight:600;background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.3)"></div>
+          </div>
+        </div>
+
+        <!-- View Notifications -->
+        <div>
+          <div class="section-header">
+            <h3 class="section-title" style="font-size:20px">Recent Notifications</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadNotifications()">↺ Refresh</button>
+          </div>
+          <div class="glass-card" style="padding:0;overflow:hidden">
+            <div id="notif-list">
+              <div class="loading-cell">Loading notifications…</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/teacher.js"></script>
+</body>
+</html>

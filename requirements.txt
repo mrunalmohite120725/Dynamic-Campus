@@ -1,0 +1,11 @@
+flask
+flask-socketio
+flask-jwt-extended
+flask-cors
+python-dotenv
+mysql-connector-python
+pdfplumber
+requests
+werkzeug
+scikit-learn
+numpy

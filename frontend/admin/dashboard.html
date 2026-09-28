@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Dynamic Campus</title>
+  <meta name="description" content="Admin control panel for Dynamic Campus timetable management system." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+
+<body>
+
+  <!-- ── LOGIN OVERLAY ─────────────────────────────────────────────────────── -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card glass-card">
+      <div class="login-brand">
+        <div class="brand-icon-lg" style="background:linear-gradient(135deg,#6366f1,#a78bfa)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <h1 class="login-title">Admin Panel</h1>
+        <p class="login-subtitle">Restricted access — authorised personnel only</p>
+      </div>
+      <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <input class="form-input" type="text" id="username" placeholder="Admin username" required
+            autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-input" type="password" id="password" placeholder="Admin password" required
+            autocomplete="current-password" />
+        </div>
+        <div class="login-error" id="login-error" style="display:none"></div>
+        <button class="btn btn-primary btn-md" type="submit" id="login-btn" style="width:100%">
+          Sign In →
+        </button>
+      </form>
+      <a href="../index.html" class="back-link">← Back to homepage</a>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ─────────────────────────────────────────────────────────── -->
+  <div class="dashboard" id="dashboard" style="display:none">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <span class="brand-name">Dynamic<span class="brand-accent">Campus</span></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" onclick="showSection('monitor',this); return false;">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+          </svg>
+          Live Monitor
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('upload',this); return false;">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+              clip-rule="evenodd" />
+          </svg>
+          Upload Timetable
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('absences',this); return false;">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+          Absences
+          <span class="nav-badge" id="absence-badge" style="display:none">0</span>
+        </a>
+
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="sidebar-avatar" style="background:linear-gradient(135deg,#6366f1,#a78bfa)">A
+          </div>
+          <div>
+            <div class="user-name" id="sidebar-name">Admin</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="logout()" style="width:100%;margin-top:12px">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="dash-header">
+        <div>
+          <h2 class="dash-title" id="dash-section-title">Live Monitor</h2>
+          <p class="dash-subtitle" id="dash-day-date">Loading…</p>
+        </div>
+        <div class="header-right">
+          <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+          <div class="live-clock" id="dash-clock">--:--:--</div>
+        </div>
+      </header>
+
+      <!-- ── LIVE MONITOR ──────────────────────────────────────────────────── -->
+      <section id="section-monitor">
+
+        <!-- Stats row -->
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:32px">
+          <div class="stat-card glass-card">
+            <div class="stat-label">Total Classrooms</div>
+            <div class="stat-value" id="stat-total">—</div>
+          </div>
+          <div class="stat-card glass-card" style="border-color:rgba(34,197,94,0.2)">
+            <div class="stat-label" style="color:var(--green)">Free</div>
+            <div class="stat-value" style="color:var(--green)" id="stat-free">—</div>
+          </div>
+          <div class="stat-card glass-card" style="border-color:rgba(239,68,68,0.25)">
+            <div class="stat-label" style="color:var(--red)">Occupied</div>
+            <div class="stat-value" style="color:var(--red)" id="stat-occupied">—</div>
+          </div>
+        </div>
+
+        <!-- Occupancy Bar -->
+        <div class="glass-card" style="padding:20px 24px;margin-bottom:32px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:13px;font-weight:600;color:var(--text-secondary)">Campus Occupancy</span>
+            <span style="font-size:13px;font-weight:700" id="occupancy-pct">0%</span>
+          </div>
+          <div class="occ-bar-track">
+            <div class="occ-bar-fill" id="occ-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Classroom Grid -->
+        <div class="section-header">
+          <h3 class="section-title" style="font-size:20px">All Classrooms</h3>
+          <div class="section-meta">
+            <span class="live-badge"><span class="live-dot"></span> Auto-refresh</span>
+            <span class="legend">
+              <span class="legend-dot free"></span> Free
+              <span class="legend-dot occupied"></span> Occupied
+            </span>
+          </div>
+        </div>
+        <div class="classroom-grid" id="admin-classroom-grid">
+          <div class="loading-placeholder">Loading classrooms…</div>
+        </div>
+      </section>
+
+      <!-- ── UPLOAD TIMETABLE ──────────────────────────────────────────────── -->
+      <section id="section-upload" style="display:none">
+        <div style="max-width:640px">
+          <div class="glass-card" style="padding:32px;margin-bottom:24px">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:24px">Upload Timetable PDF</h3>
+
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('pdf-file').click()"
+              ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+              <div class="upload-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <div class="upload-text">Drop your PDF here or click to browse</div>
+              <div class="upload-subtext" id="upload-filename">Supports: .pdf files up to 16MB</div>
+            </div>
+            <input type="file" id="pdf-file" accept=".pdf" style="display:none" onchange="onFileSelect(event)" />
+
+            <div class="progress-bar-wrap" id="progress-wrap">
+              <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px">
+              <div class="form-group">
+                <label class="form-label">Class</label>
+                <select class="form-input" id="upload-cid">
+                  <option value="1">Loading…</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Semester</label>
+                <input class="form-input" type="number" id="upload-sem" value="5" min="1" max="8" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Academic Year</label>
+                <input class="form-input" type="text" id="upload-year" value="2025-26" />
+              </div>
+            </div>
+
+            <div id="upload-result" class="upload-result-box" style="display:none"></div>
+
+            <button class="btn btn-primary btn-md" style="margin-top:24px;width:100%" onclick="uploadPDF()"
+              id="upload-btn" disabled>
+              Upload & Process →
+            </button>
+          </div>
+
+
+        </div>
+      </section>
+
+      <!-- ── ABSENCE MANAGEMENT ───────────────────────────────────────────── -->
+      <section id="section-absences" style="display:none">
+        <div class="section-header">
+          <h3 class="section-title" style="font-size:20px">Teacher Absence Reports</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadAbsenceReports()">↺ Refresh</button>
+        </div>
+        <div class="glass-card" style="padding:0;overflow:hidden">
+          <div id="absence-list">
+            <div class="loading-cell">No absence reports today.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── EXTRA LECTURE APPROVAL ────────────────────────────────────────── -->
+      <section id="section-extra" style="display:none">
+        <div class="section-header">
+          <h3 class="section-title" style="font-size:20px">Extra Lecture Requests</h3>
+          <button class="btn btn-ghost btn-sm" onclick="loadExtraRequests()">↺ Refresh</button>
+        </div>
+        <div class="glass-card" style="padding:0;overflow:hidden">
+          <div id="extra-queue">
+            <div class="loading-cell">Loading requests…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── NOTIFICATIONS ─────────────────────────────────────────────────── -->
+      <section id="section-notify" style="display:none">
+        <div style="max-width:600px">
+          <div class="glass-card" style="padding:32px">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:24px">Broadcast Notification</h3>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Target Semester (leave blank for all)</label>
+              <input class="form-input" type="number" id="notif-sem" placeholder="e.g. 5" min="1" max="8" />
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Type</label>
+              <select class="form-input" id="notif-type">
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="change">Classroom Change</option>
+                <option value="extra">Extra Lecture</option>
+                <option value="cancel">Cancellation</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:20px">
+              <label class="form-label">Message</label>
+              <textarea class="form-input" id="notif-message" rows="4"
+                placeholder="e.g. LP II lecture shifted to A1-302 today at 11:00 AM" style="resize:vertical"></textarea>
+            </div>
+            <button class="btn btn-primary btn-md" onclick="sendNotification()" style="width:100%">
+              Send to Students →
+            </button>
+            <div id="notif-result" style="display:none;margin-top:16px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MANAGE USERS ──────────────────────────────────────────────────── -->
+      <section id="section-users" style="display:none">
+        <div style="max-width:560px">
+
+          <!-- Create Admin Account -->
+          <div class="glass-card" style="padding:32px;margin-bottom:24px">
+            <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Create Admin Account</h3>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.6">
+              Use this to create additional admin accounts.
+              <strong style="color:var(--text-primary)">Teachers register themselves</strong>
+              via the Teacher Portal → Register tab.
+            </p>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Username</label>
+              <input class="form-input" type="text" id="new-username" placeholder="e.g. admin.sharma" />
+            </div>
+            <div class="form-group" style="margin-bottom:20px">
+              <label class="form-label">Password</label>
+              <input class="form-input" type="password" id="new-password" placeholder="Minimum 8 characters" />
+            </div>
+            <button class="btn btn-primary btn-md" onclick="createUser()" style="width:100%">
+              Create Admin Account →
+            </button>
+            <div id="user-result" style="display:none;margin-top:16px"></div>
+          </div>
+
+          <!-- Info box -->
+          <div class="glass-card" style="padding:20px 24px">
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+              <strong style="color:var(--text-primary)">Teacher self-registration:</strong><br />
+              Teachers visit <code style="color:var(--accent-light)">127.0.0.1:5000/teacher/dashboard.html</code>
+              and click the <strong>Register</strong> tab to create their own account, linking it to their
+              teacher record.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ── AI SUGGESTION MODAL ──────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="ai-modal" style="display:none">
+    <div class="modal-card glass-card" style="max-width:500px">
+      <div class="modal-header">
+        <h3 style="font-size:18px;font-weight:700">AI Substitute Recommender</h3>
+        <button class="btn-close" onclick="closeAIModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="ai-context" style="margin-bottom:16px;font-size:14px;color:var(--text-secondary)">
+          Finding best match for <strong>Python</strong>...
+        </div>
+        <div id="ai-results-list" class="ai-list">
+          <!-- Suggested teachers will appear here -->
+        </div>
+      </div>
+      <div class="modal-footer" style="margin-top:20px;text-align:right">
+        <button class="btn btn-ghost btn-md" onclick="closeAIModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+
+</html>

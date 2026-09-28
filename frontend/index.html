@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Campus — Smart Timetable System</title>
+  <meta name="description"
+    content="Real-time AI-powered timetable management system for colleges. View live classroom occupancy, select your class and batch to see your timetable instantly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+
+<body>
+
+  <!-- ── NAVBAR ──────────────────────────────────────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <span class="brand-name">Dynamic<span class="brand-accent">Campus</span></span>
+    </div>
+    <div class="nav-center">
+      <span class="live-badge">
+        <span class="live-dot"></span> LIVE
+      </span>
+      <span id="nav-clock" class="nav-clock">--:--:--</span>
+    </div>
+    <div class="nav-actions">
+      <a href="teacher/dashboard.html" class="btn btn-ghost btn-sm">Teacher Login</a>
+      <a href="admin/dashboard.html" class="btn btn-primary btn-sm">Admin Panel</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ────────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">AI-Powered Timetable System</div>
+      <h1 class="hero-title">
+        Know What's Happening<br />
+        <span class="gradient-text">Right Now on Campus</span>
+      </h1>
+      <p class="hero-subtitle">
+        Select your class and batch to instantly see your timetable.<br />
+        Real-time classroom occupancy.
+      </p>
+
+      <!-- ── Student Selector ────────────────────────────── -->
+      <div class="selector-card glass-card" id="selector-card">
+        <div class="selector-row">
+          <div class="selector-group">
+            <label class="selector-label" for="sel-class">Select Class</label>
+            <select id="sel-class" class="selector-select" onchange="onClassChange()">
+              <option value="">— Choose Class —</option>
+            </select>
+          </div>
+          <div class="selector-group">
+            <label class="selector-label" for="sel-batch">Select Batch</label>
+            <select id="sel-batch" class="selector-select" disabled onchange="onBatchChange()">
+              <option value="">— Choose Batch —</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="loadStudentView()" id="view-btn" disabled>
+            View Timetable →
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── NOTIFICATIONS BANNER ─────────────────────────────────────────────── -->
+  <section class="notifications-banner" id="notifications-banner" style="display:none; padding: 20px 0;">
+    <div class="container">
+      <div id="notifications-list-container" class="glass-card"
+        style="padding:16px; border-left: 4px solid var(--accent); position: relative; overflow: hidden;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+          <div class="live-dot" style="width:10px; height:10px;"></div>
+          <h4
+            style="margin:0; font-size:16px; color:white; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+            Campus Updates</h4>
+        </div>
+        <div id="notifications-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Notifications will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CURRENT + NEXT LECTURE (hidden until class selected) ──────────────── -->
+  <section class="lecture-strip" id="lecture-strip" style="display:none">
+    <div class="container">
+      <div class="lecture-cards">
+
+        <!-- Current Lecture -->
+        <div class="lecture-card current-card glass-card" id="current-card">
+          <div class="lecture-card-header">
+            <span class="card-tag tag-live">
+              <span class="live-dot"></span> Now
+            </span>
+            <span class="lecture-time" id="current-time">--:-- to --:--</span>
+          </div>
+          <div class="lecture-card-body">
+            <div class="lecture-subject" id="current-subject">No lecture running</div>
+            <div class="lecture-meta">
+              <span class="meta-chip" id="current-teacher">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                </svg>
+                —
+              </span>
+              <span class="meta-chip" id="current-room">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                —
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Lecture -->
+        <div class="lecture-card next-card glass-card" id="next-card">
+          <div class="lecture-card-header">
+            <span class="card-tag tag-next">Next Up</span>
+            <span class="lecture-time" id="next-time">—</span>
+          </div>
+          <div class="lecture-card-body">
+            <div class="lecture-subject" id="next-subject">—</div>
+            <div class="lecture-meta">
+              <span class="meta-chip" id="next-teacher">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                </svg>
+                —
+              </span>
+              <span class="meta-chip" id="next-room">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                —
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WEEKLY TIMETABLE TABLE (hidden until loaded) ───────────────────────── -->
+  <section class="timetable-section" id="timetable-section" style="display:none">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Weekly Timetable</h2>
+        <span class="section-badge" id="timetable-label">—</span>
+      </div>
+      <div class="table-wrapper glass-card">
+        <table class="timetable-table" id="timetable-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+              <th>Friday</th>
+            </tr>
+          </thead>
+          <tbody id="timetable-body">
+            <tr>
+              <td colspan="6" class="loading-cell">Select class and batch to load timetable.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FIND A TEACHER ──────────────────────────────────────────────────────── -->
+  <section class="teacher-search-section" id="teacher-search-section" style="padding: 40px 0;">
+    <div class="container">
+      <div class="section-header" style="margin-bottom:24px;">
+        <h2 class="section-title">Faculty Information Hub</h2>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+        <!-- Left Side: Search & Suggestions and Department Accordion -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="glass-card" style="padding: 24px; position: relative;">
+            <div class="search-wrapper">
+              <label class="form-label" style="display:block; margin-bottom:8px; font-size:14px; color:var(--text-secondary); font-weight: 600;">
+                Search Faculty Members
+              </label>
+              <input type="text" id="teacher-search-input" class="form-input" placeholder="Type name or department (e.g. Computer)..." 
+                style="width:100%; padding:12px; background:var(--bg-elevated); border:1px solid var(--border); color:white; border-radius:8px;" autocomplete="off" />
+              <div id="teacher-suggestions" class="suggestions-dropdown glass-card" style="display:none;"></div>
+            </div>
+          </div>
+          
+          <!-- Collapsible Accordion by Department -->
+          <div class="glass-card" style="padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary)">
+              Browse Departments
+            </h3>
+            <div id="departments-list" class="departments-accordion">
+              <!-- JS Populated -->
+              <div class="loading-cell">Loading departments...</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Side: Selected Teacher Profile, Live Status, Timetable, & Free Slots -->
+        <div id="teacher-details-card" class="glass-card" style="padding: 24px; display: block; min-height: 350px;">
+          <div id="teacher-details-placeholder" style="text-align: center; padding-top: 100px; color: var(--text-muted)">
+            Select a faculty member to see their live status, cabin number, and schedules.
+          </div>
+          <div id="teacher-details-content" style="display: none;">
+            <!-- Rendered dynamically in JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CLASSROOM CARDS ─────────────────────────────────────────────────────── -->
+  <section class="classrooms-section" id="classrooms-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Live Classroom Status</h2>
+        <div class="section-meta">
+          <span class="live-badge"><span class="live-dot"></span> Auto-updates</span>
+          <span class="legend">
+            <span class="legend-dot free"></span> Free
+            <span class="legend-dot occupied"></span> Occupied
+          </span>
+        </div>
+      </div>
+      <div class="classroom-grid" id="classroom-grid">
+        <!-- Populated by JS -->
+        <div class="loading-placeholder">Loading classrooms…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ──────────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <p>Dynamic Campus &copy; 2025 &mdash; AI-Based Timetable Management System</p>
+  </footer>
+
+  <!-- ── SCRIPTS ─────────────────────────────────────────────────────────────── -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/home.js"></script>
+</body>
+
+</html>
